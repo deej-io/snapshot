@@ -73,10 +73,10 @@ func WithSnapshotFilename(filename string) GetTestInputOption {
 	}
 }
 
-// WithInputCreateSnapshot provides a SnapshotCreator function to specify the
+// WithCreateSnapshot provides a SnapshotCreator function to specify the
 // data for the test when no snapshot file exists. This data is also persisted
 // to disk and used for subsequent test runs.
-func WithInputCreateSnapshot(r func() (io.Reader, error)) GetTestInputOption {
+func WithCreateSnapshot(r func() (io.Reader, error)) GetTestInputOption {
 	return func(o *GetTestInputOptions) {
 		o.CreateSnapshot = r
 	}
@@ -84,7 +84,7 @@ func WithInputCreateSnapshot(r func() (io.Reader, error)) GetTestInputOption {
 
 // WithInputSnapshotReader creates SnapshotCreator func from a reader.
 func WithInputSnapshotReader(r io.Reader) GetTestInputOption {
-	return WithInputCreateSnapshot(func() (io.Reader, error) { return r, nil })
+	return WithCreateSnapshot(func() (io.Reader, error) { return r, nil })
 }
 
 // GetTestInput gets loads the input snapshot for a particular test case.  By
