@@ -10,7 +10,7 @@ import (
 // CmpDiffComparator reads expected and actual into strings compares them using
 // cmp.Diff from the go-cmp library. On failure the diff string is returned.
 func CmpDiffComparator(expected, actual io.Reader) (ok bool, msg string) {
-	actualBytes, err := readToString(actual)
+	actualBytes, err := io.ReadAll(actual)
 	if err != nil {
 		msg = fmt.Sprintf("failed to read actual io.Reader: %v", err.Error())
 		return
