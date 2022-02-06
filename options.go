@@ -11,7 +11,7 @@ type SnapshotOption interface {
 	MatchOption
 }
 
-// WithInputSnapshotName overrides the snapshot name. This is useful in cases
+// WithSnapshotName overrides the snapshot name. This is useful in cases
 // where there may be multiple input/output snapshots for a test. This option does not
 // change the file extension.
 func WithSnapshotName(name string) SnapshotOption {
@@ -88,6 +88,13 @@ func WithCreateSnapshotFromReader(r io.Reader) GetTestInputOption {
 	return WithCreateSnapshot(func() (io.Reader, error) { return r, nil })
 }
 
+// WithMatchOption applies f to the MatchOptions defaults.
+type MatchOptionFunc func(*MatchOptions)
+
+func (mof MatchOptionFunc) ApplyMatchOption(o *MatchOptions) {
+	mof(o)
+}
+
 // WithComparator overrides the default comparator with a custom function.
 func WithComparator(cmp Comparator) MatchOption {
 	return MatchOptionFunc(func(o *MatchOptions) { o.Comparator = cmp })
@@ -97,11 +104,4 @@ func WithComparator(cmp Comparator) MatchOption {
 // actual and expected io.Readers before comparison.
 func WithReaderNormaliser(rn ReaderNormaliser) MatchOption {
 	return MatchOptionFunc(func(o *MatchOptions) { o.ReaderNormaliser = rn })
-}
-
-// WithMatchOption applies f to the MatchOptions defaults.
-type MatchOptionFunc func(*MatchOptions)
-
-func (mof MatchOptionFunc) ApplyMatchOption(o *MatchOptions) {
-	mof(o)
 }
