@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/djrollins/go-snapshot"
+	"github.com/djrollins/snapshot"
 )
 
 var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
