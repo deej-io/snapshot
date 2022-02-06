@@ -3,6 +3,7 @@
 package snapshot
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -233,14 +234,12 @@ func Match(t *testing.T, actual io.Reader, optFns ...MatchOption) (ok bool, msg 
 	}
 	p := filepath.Clean(getSnapshotFilePath(t, opts.SnapshotName, opts.FileExtension))
 	t.Logf("output snapshot filename: %v", p)
-	file, err := os.Open(p)
 	var expected io.Reader
-	if err == nil {
+	if file, err := os.Open(p); err == nil {
 		t.Logf("using existing snapshot")
 		expected = file
 		t.Cleanup(func() { _ = file.Close() })
-	}
-	if os.IsNotExist(err) {
+	} else if os.IsNotExist(err) {
 		t.Log("creating new output snapshot")
 		err = os.MkdirAll(filepath.Dir(p), 0750)
 		if err != nil {
@@ -251,12 +250,17 @@ func Match(t *testing.T, actual io.Reader, optFns ...MatchOption) (ok bool, msg 
 			t.Fatalf("failed to open newly created snapshot file: %v: %v", p, err.Error())
 		}
 		t.Cleanup(func() { _ = file.Close() })
-		_, err = io.Copy(file, actual)
+		actualCopy := new(bytes.Buffer)
+		_, err = io.Copy(io.MultiWriter(file, actualCopy), actual)
 		if err != nil {
 			t.Fatalf("failed to write to newly created snapshot file: %v: %v", p, err.Error())
 		}
+		_, err = file.Seek(0, 0)
+		if err != nil {
+			t.Fatalf("failed to seek to beginning for snapshot file: %v", err.Error())
+		}
 		expected = file
-		actual = file
+		actual = actualCopy
 	}
 	ok, msg = opts.Comparator(expected, actual)
 	return
