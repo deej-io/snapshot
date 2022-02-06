@@ -147,17 +147,27 @@ func GetTestInput(t *testing.T, optFns ...GetTestInputOption) (out io.Reader) {
 // readable reason for the failure in the case where the values are not equal.
 type Comparator func(expected, actual io.Reader) (ok bool, msg string)
 
+// A ReaderNormaliser is a function that takes an io.Reader and returns a new
+// io.Reader after some processing. This function is applied to the actual and
+// expected io.Readers before they are passed to the Comparator
+type ReaderNormaliser func(io.Reader) io.Reader
+
 // MatchOptions are the set of options to configure the behaviour of Match.
 type MatchOptions struct {
 	// SnapshotName is the name of the snapshot to load, without the
 	// extension. This defaults to the value "output".
-	SnapshotName  string
+	SnapshotName string
 	// FileExtension is the file extension of the snapshot. This defaults
 	// to ".txt".
 	FileExtension string
 	// Comparator is a function to compare the actual and expected
 	// io.Readers.
-	Comparator    Comparator
+	Comparator Comparator
+	// ReaderNormaliser is applied to the actual and expected io.Readers before
+	// being passed to the comparator. This can be used to perform some clean
+	// or modifications (i.e. sorting) of the snapshot/actual data before
+	// comparison.
+	ReaderNormaliser ReaderNormaliser
 }
 
 // MatchOption may be an argument to Match in order to change MatchOptions.
@@ -188,6 +198,14 @@ func WithComparator(cmp Comparator) MatchOption {
 	}
 }
 
+// WithReaderNormaliser provides a ReaderNormaliser function to apply to the
+// actual and expected io.Readers before comparison.
+func WithReaderNormaliser(rn ReaderNormaliser) MatchOption {
+	return func(o *MatchOptions) {
+		o.ReaderNormaliser = rn
+	}
+}
+
 // readToString reads r into a string.
 func readToString(r io.Reader) (string, error) {
 	buf := new(strings.Builder)
@@ -215,6 +233,10 @@ func StringComparator(expected, actual io.Reader) (ok bool, msg string) {
 	return
 }
 
+// NopReaderNormaliser is the default ReaderNormaliser. It passes the input
+// io.Reader through unmodified
+func NopReaderNormaliser(r io.Reader) io.Reader { return r }
+
 // Match loads the output snapshot for a particular test case.  By
 // default, this looks for the file at the location
 // <test-directory>/__snapshots__/<test-name>/output.txt. The base directory
@@ -225,9 +247,10 @@ func StringComparator(expected, actual io.Reader) (ok bool, msg string) {
 // subsequent test runs.
 func Match(t *testing.T, actual io.Reader, optFns ...MatchOption) (ok bool, msg string) {
 	opts := MatchOptions{
-		SnapshotName:  "output",
-		FileExtension: ".txt",
-		Comparator:    StringComparator,
+		SnapshotName:     "output",
+		FileExtension:    ".txt",
+		Comparator:       StringComparator,
+		ReaderNormaliser: NopReaderNormaliser,
 	}
 	for _, optFn := range optFns {
 		optFn(&opts)
@@ -262,6 +285,9 @@ func Match(t *testing.T, actual io.Reader, optFns ...MatchOption) (ok bool, msg 
 		expected = file
 		actual = actualCopy
 	}
-	ok, msg = opts.Comparator(expected, actual)
+	ok, msg = opts.Comparator(
+		opts.ReaderNormaliser(expected),
+		opts.ReaderNormaliser(actual),
+	)
 	return
 }
