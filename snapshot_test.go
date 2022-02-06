@@ -74,4 +74,8 @@ func TestInputChanged(t *testing.T) {
 	if str := readToStringUnchecked(secondInput); str != "hello" {
 		t.Errorf("expected %q, got %q", "hello", str)
 	}
+	thirdInput := GetTestInput(t, WithInputSnapshotName("different"), WithInputSnapshotReader(strings.NewReader("world")))
+	if str := readToStringUnchecked(thirdInput); str != "world" {
+		t.Errorf("expected %q, got %q", "world", str)
+	}
 }
