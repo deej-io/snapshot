@@ -36,8 +36,8 @@ func AsJSON(i interface{}) (out io.Reader, err error) {
 // WithCreateSnapshotAsJSON configures GetTestInput to use AsJSON as the
 // CreateSnapshot and sets the file extension to ".json".
 func WithCreateSnapshotAsJSON(i interface{}) GetTestInputOption {
-	return func(o *GetTestInputOptions) {
+	return GetTestInputOptionFunc(func(o *GetTestInputOptions) {
 		o.CreateSnapshot = func() (io.Reader, error) { return AsJSON(i) }
 		o.FileExtension = ".json"
-	}
+	})
 }

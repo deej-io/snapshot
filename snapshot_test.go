@@ -19,7 +19,7 @@ func getInputOutputPathsAndClean(t *testing.T) (input, output string) {
 
 func TestRoundTrip(t *testing.T) {
 	inputP, outputP := getInputOutputPathsAndClean(t)
-	input := GetTestInput(t, WithInputSnapshotReader(strings.NewReader("hello")))
+	input := GetTestInput(t, WithCreateSnapshotFromReader(strings.NewReader("hello")))
 	ok, msg := Match(t, input)
 
 	if !ok {
@@ -66,15 +66,15 @@ func readToStringUnchecked(r io.Reader) (s string) {
 
 func TestInputChanged(t *testing.T) {
 	_, _ = getInputOutputPathsAndClean(t)
-	firstInput := GetTestInput(t, WithInputSnapshotReader(strings.NewReader("hello")))
+	firstInput := GetTestInput(t, WithCreateSnapshotFromReader(strings.NewReader("hello")))
 	if str := readToStringUnchecked(firstInput); str != "hello" {
 		t.Errorf("expected %q, got %q", "hello", str)
 	}
-	secondInput := GetTestInput(t, WithInputSnapshotReader(strings.NewReader("world")))
+	secondInput := GetTestInput(t, WithCreateSnapshotFromReader(strings.NewReader("world")))
 	if str := readToStringUnchecked(secondInput); str != "hello" {
 		t.Errorf("expected %q, got %q", "hello", str)
 	}
-	thirdInput := GetTestInput(t, WithInputSnapshotName("different"), WithInputSnapshotReader(strings.NewReader("world")))
+	thirdInput := GetTestInput(t, WithSnapshotName("different"), WithCreateSnapshotFromReader(strings.NewReader("world")))
 	if str := readToStringUnchecked(thirdInput); str != "world" {
 		t.Errorf("expected %q, got %q", "world", str)
 	}

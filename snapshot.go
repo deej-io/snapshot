@@ -45,47 +45,8 @@ type GetTestInputOptions struct {
 
 // GetTestInputOption may be an argument to GetTestInput in order to change
 // GetTestInputOptions
-type GetTestInputOption func(*GetTestInputOptions)
-
-// WithInputSnapshotName overrides the snapshot name. This is useful in cases
-// where there may be multiple input snapshots for a test. This option does not
-// change the file extension.
-func WithInputSnapshotName(name string) GetTestInputOption {
-	return func(o *GetTestInputOptions) {
-		o.SnapshotName = name
-	}
-}
-
-// WithInputSnapshotFileExtension overrides the file extension for the
-// resulting snapshot file. This is useful if the snapshots are read by
-// external tools and make use of the extensions to determine the filetype.
-func WithInputSnapshotFileExtension(ext string) GetTestInputOption {
-	return func(o *GetTestInputOptions) {
-		o.FileExtension = ext
-	}
-}
-
-// WithSnapshotFilename overrides snapshot name and file extension of the
-// resulting snapshot file.
-func WithSnapshotFilename(filename string) GetTestInputOption {
-	return func(o *GetTestInputOptions) {
-		o.FileExtension = filepath.Ext(filename)
-		o.SnapshotName = strings.TrimSuffix(filename, o.FileExtension)
-	}
-}
-
-// WithCreateSnapshot provides a SnapshotCreator function to specify the
-// data for the test when no snapshot file exists. This data is also persisted
-// to disk and used for subsequent test runs.
-func WithCreateSnapshot(r func() (io.Reader, error)) GetTestInputOption {
-	return func(o *GetTestInputOptions) {
-		o.CreateSnapshot = r
-	}
-}
-
-// WithInputSnapshotReader creates SnapshotCreator func from a reader.
-func WithInputSnapshotReader(r io.Reader) GetTestInputOption {
-	return WithCreateSnapshot(func() (io.Reader, error) { return r, nil })
+type GetTestInputOption interface {
+	ApplyInputOption(*GetTestInputOptions)
 }
 
 // GetTestInput gets loads the input snapshot for a particular test case.  By
@@ -103,8 +64,8 @@ func GetTestInput(t *testing.T, optFns ...GetTestInputOption) (out io.Reader) {
 		FileExtension:  ".txt",
 		CreateSnapshot: nil,
 	}
-	for _, optFn := range optFns {
-		optFn(&opts)
+	for _, opt := range optFns {
+		opt.ApplyInputOption(&opts)
 	}
 
 	p := filepath.Clean(getSnapshotFilePath(t, opts.SnapshotName, opts.FileExtension))
@@ -171,39 +132,8 @@ type MatchOptions struct {
 }
 
 // MatchOption may be an argument to Match in order to change MatchOptions.
-type MatchOption func(*MatchOptions)
-
-// WithOutputSnapshotName overrides the snapshot name. This is useful in cases
-// where there may be multiple output snapshots for a test. This option does not
-// change the file extension.
-func WithOutputSnapshotName(name string) MatchOption {
-	return func(o *MatchOptions) {
-		o.SnapshotName = name
-	}
-}
-
-// WithOutputSnapshotFileExtension overrides the file extension for the
-// resulting snapshot file. This is useful if the snapshots are read by
-// external tools and make use of the extensions to determine the filetype.
-func WithOutputSnapshotFileExtension(ext string) MatchOption {
-	return func(o *MatchOptions) {
-		o.FileExtension = ext
-	}
-}
-
-// WithComparator overrides the default comparator with a custom function.
-func WithComparator(cmp Comparator) MatchOption {
-	return func(o *MatchOptions) {
-		o.Comparator = cmp
-	}
-}
-
-// WithReaderNormaliser provides a ReaderNormaliser function to apply to the
-// actual and expected io.Readers before comparison.
-func WithReaderNormaliser(rn ReaderNormaliser) MatchOption {
-	return func(o *MatchOptions) {
-		o.ReaderNormaliser = rn
-	}
+type MatchOption interface {
+	ApplyMatchOption(*MatchOptions)
 }
 
 // readToString reads r into a string.
@@ -252,8 +182,8 @@ func Match(t *testing.T, actual io.Reader, optFns ...MatchOption) (ok bool, msg 
 		Comparator:       StringComparator,
 		ReaderNormaliser: NopReaderNormaliser,
 	}
-	for _, optFn := range optFns {
-		optFn(&opts)
+	for _, opt := range optFns {
+		opt.ApplyMatchOption(&opts)
 	}
 	p := filepath.Clean(getSnapshotFilePath(t, opts.SnapshotName, opts.FileExtension))
 	t.Logf("output snapshot filename: %v", p)

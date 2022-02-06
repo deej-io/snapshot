@@ -41,7 +41,7 @@ func TestEAR(t *testing.T) {
 	// and breaking changes can be detected between versions.
 	input := snapshot.GetTestInput(t,
 		snapshot.WithCreateSnapshot(ExpensiveAsyncronousRandomOperation),
-		snapshot.WithInputSnapshotName("ear_"+EARVersion),
+		snapshot.WithSnapshotName("ear_"+EARVersion),
 	)
 	buf := new(strings.Builder)
 	_, _ = io.Copy(buf, input)
