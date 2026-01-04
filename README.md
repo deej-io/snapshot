@@ -5,7 +5,7 @@ snapshot provides a set of utility functions for creating and loading snapshot f
 ## Install
 
 ```
-go get -u github.com/djrollins/snapshot
+go get -u github.com/deej-io/snapshot
 ```
 
 ## Output Snapshot Example
@@ -16,7 +16,7 @@ package example
 import (
 	"testing"
 
-	"github.com/djrollins/snapshot"
+	"github.com/deej-io/snapshot"
 )
 
 func ScanSum(in []int) (out []int) {
@@ -57,7 +57,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/djrollins/snapshot"
+	"github.com/deej-io/snapshot"
 )
 
 var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

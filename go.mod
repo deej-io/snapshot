@@ -1,4 +1,4 @@
-module github.com/djrollins/snapshot
+module github.com/deej-io/snapshot
 
 go 1.17
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/djrollins/snapshot"
+	"github.com/deej-io/snapshot"
 )
 
 var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

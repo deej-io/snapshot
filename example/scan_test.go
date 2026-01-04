@@ -3,7 +3,7 @@ package example
 import (
 	"testing"
 
-	"github.com/djrollins/snapshot"
+	"github.com/deej-io/snapshot"
 )
 
 func ScanSum(in []int) (out []int) {
